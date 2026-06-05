@@ -1,13 +1,14 @@
 # ⚡ App Compiler — Natural Language → Executable App Config
 
-> **AI Engineer Internship Demo Task**
-> Converts natural language app descriptions into complete, validated, cross-layer consistent app configurations — like a compiler, but for software generation.
+**AI Engineer Internship Demo Task**
+
+Converts natural language app descriptions into complete, validated, cross-layer consistent app configurations — like a compiler, but for software generation.
 
 ---
 
-## 🏗️ Architecture Overview
+# 🏗️ Architecture Overview
 
-```
+```text
 User Prompt
     │
     ▼
@@ -28,11 +29,11 @@ User Prompt
                       │
                       ▼
 ┌─────────────────────────────────────────────────┐
-│  Stage 3: Schema Generation (4 parallel calls)  │
-│  ├── DB Schema (tables, fields, FK, indexes)    │
-│  ├── API Schema (endpoints, params, roles)      │
-│  ├── UI Schema (pages, components, fields)      │
-│  └── Auth Schema (roles, permissions, JWT)      │
+│  Stage 3: Schema Generation (4 parallel calls) │
+│  ├── DB Schema (tables, fields, FK, indexes)   │
+│  ├── API Schema (endpoints, params, roles)     │
+│  ├── UI Schema (pages, components, fields)     │
+│  └── Auth Schema (roles, permissions, JWT)     │
 └─────────────────────┬───────────────────────────┘
                       │
                       ▼
@@ -60,28 +61,28 @@ User Prompt
 
 ---
 
-## 📁 Project Structure
+# 📁 Project Structure
 
-```
+```text
 app-compiler/
 ├── backend/
-│   ├── main.py                  # FastAPI server
-│   ├── pipeline.py              # 4-stage pipeline orchestrator
-│   ├── eval_runner.py           # Evaluation framework (20 test cases)
+│   ├── main.py
+│   ├── pipeline.py
+│   ├── eval_runner.py
 │   ├── requirements.txt
 │   ├── Dockerfile
 │   ├── stages/
-│   │   ├── stage1_intent.py     # NL → structured intent
-│   │   ├── stage2_design.py     # Intent → system architecture
-│   │   ├── stage3_schemas.py    # Generate DB/API/UI/Auth schemas
-│   │   └── stage4_refine.py     # Cross-layer consistency + business logic
+│   │   ├── stage1_intent.py
+│   │   ├── stage2_design.py
+│   │   ├── stage3_schemas.py
+│   │   └── stage4_refine.py
 │   ├── validators/
-│   │   └── validator.py         # Validation + auto-repair engine
+│   │   └── validator.py
 │   └── schemas/
-│       └── app_schema.py        # Pydantic models for strict typing
+│       └── app_schema.py
 ├── frontend/
 │   ├── src/
-│   │   ├── App.jsx              # Full React UI
+│   │   ├── App.jsx
 │   │   └── main.jsx
 │   ├── index.html
 │   ├── package.json
@@ -93,40 +94,99 @@ app-compiler/
 
 ---
 
-## 🚀 Quick Start
+# 🛠️ Tech Stack
 
-### Option 1: Local Development
+### Frontend
 
-**Backend:**
+* React
+* Vite
+
+### Backend
+
+* FastAPI
+* Pydantic
+
+### AI
+
+* Google Gemini 2.5 Flash
+
+### Infrastructure
+
+* Docker
+* Docker Compose
+
+---
+
+# 🚀 Quick Start
+
+## Option 1: Local Development
+
+### Backend
+
 ```bash
 cd backend
 pip install -r requirements.txt
-export ANTHROPIC_API_KEY=your_key_here
+```
+
+Create `.env`
+
+```env
+GEMINI_API_KEY=your_api_key_here
+```
+
+Run:
+
+```bash
 uvicorn main:app --reload --port 8000
 ```
 
-**Frontend:**
+### Frontend
+
 ```bash
 cd frontend
 npm install
 npm run dev
-# Open http://localhost:3000
 ```
 
-### Option 2: Docker Compose
-```bash
-export ANTHROPIC_API_KEY=your_key_here
-docker-compose up --build
-# Backend: http://localhost:8000
-# Frontend: http://localhost:3000
+Open:
+
+```text
+http://localhost:3000
 ```
 
 ---
 
-## 📤 API Reference
+## Option 2: Docker Compose
 
-### `POST /compile`
-Compile a prompt into a full app config (synchronous).
+```env
+GEMINI_API_KEY=your_api_key_here
+```
+
+```bash
+docker-compose up --build
+```
+
+Backend:
+
+```text
+http://localhost:8000
+```
+
+Frontend:
+
+```text
+http://localhost:3000
+```
+
+---
+
+# 📤 API Reference
+
+## POST /compile
+
+Compile a prompt into a full app configuration.
+
+Request:
 
 ```json
 {
@@ -134,172 +194,210 @@ Compile a prompt into a full app config (synchronous).
 }
 ```
 
-**Response:** Full `AppConfig` JSON
-
-### `POST /compile/stream`
-Server-sent events streaming version. Emits stage-by-stage progress.
-
-**Event types:** `start`, `stage`, `stage_complete`, `validation_complete`, `complete`, `error`
-
-### `POST /eval`
-Run the evaluation suite.
-
-```json
-{ "run_type": "all" }  // "all" | "real" | "edge"
-```
-
----
-
-## 🔍 Output Schema
+Response:
 
 ```json
 {
-  "app": {
-    "name": "CRM Pro",
-    "description": "...",
-    "entities": ["User", "Contact", "Deal"],
-    "features": ["login", "dashboard", "payments"],
-    "assumptions": ["Stripe used for payments", ...]
-  },
-  "database": {
-    "tables": [
-      {
-        "name": "users",
-        "fields": [
-          { "name": "id", "type": "uuid", "primary_key": true },
-          { "name": "email", "type": "string", "unique": true },
-          { "name": "role", "type": "enum", "enum_values": ["admin", "user"] },
-          ...
-        ],
-        "relations": ["User has_many Contacts"]
-      }
-    ]
-  },
-  "api": {
-    "base_path": "/api/v1",
-    "endpoints": [
-      {
-        "method": "POST",
-        "path": "/auth/login",
-        "auth_required": false,
-        "body_params": [{"name": "email", "type": "string"}, ...],
-        "response_fields": ["token", "user"],
-        "db_table": "users"
-      }
-    ]
-  },
-  "ui": {
-    "pages": [
-      {
-        "name": "Dashboard",
-        "route": "/dashboard",
-        "auth_required": true,
-        "roles": ["admin", "user"],
-        "components": [
-          {
-            "id": "contacts_table",
-            "type": "table",
-            "api_endpoint": "/api/v1/contacts",
-            "roles": ["admin", "user"]
-          }
-        ]
-      }
-    ]
-  },
-  "auth": {
-    "strategy": "jwt",
-    "roles": [
-      {
-        "name": "admin",
-        "permissions": [{ "resource": "*", "actions": ["*"] }]
-      }
-    ]
-  },
-  "business_logic": {
-    "rules": [
-      {
-        "name": "premium_gate_analytics",
-        "type": "premium_gate",
-        "condition": "user.plan !== 'premium'",
-        "action": "redirect_to_upgrade"
-      }
-    ],
-    "payment_enabled": true,
-    "payment_provider": "stripe"
-  },
-  "meta": {
-    "stage_latencies_ms": {
-      "stage1_intent": 820,
-      "stage2_design": 1240,
-      "stage3_schemas": 3100,
-      "validation": 12,
-      "stage4_refine": 1800
-    },
-    "retries": 0,
-    "repairs": ["Added missing 'id' field to table contacts", ...],
-    "warnings": [],
-    "success": true
-  }
+  "app": {},
+  "database": {},
+  "api": {},
+  "ui": {},
+  "auth": {},
+  "business_logic": {}
 }
 ```
 
 ---
 
-## 🛡️ Validation + Repair Engine
+## POST /compile/stream
 
-The engine catches and fixes these automatically:
+Server-Sent Events (SSE) streaming endpoint.
 
-| Issue | Action |
-|-------|--------|
-| Invalid JSON syntax | Claude-powered JSON repair |
-| Missing `id`, `created_at`, `updated_at` fields | Auto-add to every table |
-| Missing `/auth/login`, `/auth/register` endpoints | Auto-inject |
-| Missing `/login` page in UI | Auto-inject |
-| Malformed FK references (`table` → `table.id`) | Auto-fix |
-| Undefined roles on pages/components | Warning logged |
-| API params not matching DB fields | Warning logged |
-| No default role set | Auto-assign |
-| Missing admin role | Auto-inject |
+Emits:
 
----
-
-## 📊 Evaluation Framework
-
-20 test cases: 10 real product prompts + 10 edge cases (vague, conflicting, incomplete, over-specified).
-
-**Tracked metrics:**
-- ✅ Success rate (overall, real, edge)
-- ⏱️ Average latency (ms)
-- 🔄 Average retries per run
-- 🔧 Average repairs per run
-- ❌ Failure type breakdown (invalid_json, timeout, rate_limit, missing_field, schema_mismatch)
-- 💰 Estimated cost per run
+```text
+start
+stage
+stage_complete
+validation_complete
+complete
+error
+```
 
 ---
 
-## ⚖️ Cost vs Quality Tradeoffs
+## POST /eval
 
-| Factor | Decision |
-|--------|----------|
-| Model | Claude Sonnet 4 — best balance of quality + speed vs Opus |
-| Stage count | 4 separate calls — better than 1 (quality) but fewer than 6+ (cost) |
-| Max retries | 3 — handles transient failures without runaway cost |
-| Repair strategy | Surgical repair (fix specific layer) vs full retry (expensive) |
-| Streaming | SSE streaming — better UX, same cost |
-| Schema size | Capped at 4000 tokens per stage — prevents runaway generation |
+Run evaluation suite.
 
-**Estimated cost per compile:** ~$0.024 (8K tokens avg × Sonnet pricing)
+```json
+{
+  "run_type": "all"
+}
+```
+
+Available:
+
+```text
+all
+real
+edge
+```
 
 ---
 
-## 🔑 Key Design Decisions
+# 🛡️ Validation + Repair Engine
 
-1. **Single prompt = rejected.** The task explicitly requires multi-stage. Each stage has a focused system prompt that produces a smaller, verifiable artifact.
+The engine automatically detects and repairs:
 
-2. **Validator runs between Stage 3 and Stage 4.** This means Stage 4 (refinement) operates on already-clean schemas, reducing hallucination surface area.
+| Issue                  | Action                     |
+| ---------------------- | -------------------------- |
+| Invalid JSON syntax    | Gemini-powered JSON repair |
+| Missing id fields      | Auto-add                   |
+| Missing timestamps     | Auto-add                   |
+| Missing auth endpoints | Auto-inject                |
+| Missing login page     | Auto-inject                |
+| Broken FK references   | Auto-fix                   |
+| Undefined roles        | Warning                    |
+| API/DB mismatches      | Warning                    |
+| Missing default role   | Auto-assign                |
+| Missing admin role     | Auto-inject                |
 
-3. **Repair is surgical, not brute-force.** When a field is missing, we add it. We don't re-run the whole pipeline.
+---
 
-4. **Pydantic for type safety.** `AppConfig` and all sub-schemas are Pydantic models, providing runtime validation with zero extra prompting.
+# 📊 Evaluation Framework
 
-5. **Assumptions are documented.** Every ambiguity is turned into a documented assumption in the output, making the system auditable.
+20 benchmark prompts:
+
+* 10 real-world product requests
+* 10 edge-case prompts
+
+Metrics tracked:
+
+* ✅ Success Rate
+* ⏱️ Average Latency
+* 🔄 Average Retries
+* 🔧 Average Repairs
+* ❌ Failure Breakdown
+* 💰 Estimated Cost
+
+Failure categories:
+
+```text
+invalid_json
+timeout
+rate_limit
+missing_field
+schema_mismatch
+```
+
+---
+
+# ⚖️ Cost vs Quality Tradeoffs
+
+| Factor          | Decision                |
+| --------------- | ----------------------- |
+| Model           | Gemini 2.5 Flash        |
+| Architecture    | 4-stage pipeline        |
+| Retry Strategy  | Maximum 3 retries       |
+| Repair Strategy | Surgical repair         |
+| Streaming       | SSE                     |
+| Schema Limits   | Token-capped generation |
+
+Gemini 2.5 Flash was selected for its balance of:
+
+* Structured JSON generation
+* Low latency
+* Low operational cost
+* Reliable multi-step reasoning
+
+---
+
+# 🔑 Key Design Decisions
+
+### Multi-Stage Architecture
+
+A single prompt approach was intentionally avoided.
+
+Each stage focuses on a specific responsibility:
+
+1. Intent Extraction
+2. System Design
+3. Schema Generation
+4. Refinement
+
+This improves:
+
+* Accuracy
+* Validation
+* Auditability
+* Repairability
+
+---
+
+### Validation Before Refinement
+
+The validator runs between Stage 3 and Stage 4.
+
+This ensures refinement operates only on already-valid schemas.
+
+---
+
+### Surgical Repair Strategy
+
+Instead of rerunning the entire pipeline:
+
+* Missing fields are injected
+* Broken references are repaired
+* Invalid JSON is fixed
+
+This reduces latency and cost.
+
+---
+
+### Strong Typing
+
+Pydantic models enforce:
+
+* Schema correctness
+* Runtime validation
+* Type safety
+
+---
+
+### Explicit Assumptions
+
+Any ambiguity detected in the prompt is documented as an assumption in the generated output.
+
+This makes the system transparent and auditable.
+
+---
+
+# 🎯 Example Output
+
+The final generated configuration includes:
+
+* Application Metadata
+* Database Schema
+* API Schema
+* UI Schema
+* Authentication Schema
+* Business Logic Rules
+* Validation Metadata
+* Repair Logs
+* Performance Metrics
+
+All outputs are cross-layer validated before being returned.
+
+---
+
+# 📄 License
+
+Built as an AI Engineer Internship Demo Project showcasing:
+
+* LLM Orchestration
+* Multi-Agent Style Pipelines
+* Schema Generation
+* Validation Systems
+* Full-Stack Engineering
+* Production-Oriented AI Architecture
