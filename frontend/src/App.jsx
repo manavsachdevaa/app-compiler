@@ -15,7 +15,7 @@ const EXAMPLE_PROMPTS = [
   "Create a SaaS analytics dashboard with multi-tenant support, charts, data export, team collaboration, and billing.",
 ];
 
-const API_BASE = "http://localhost:8000";
+const API_BASE = import.meta.env.VITE_API_URL;
 
 function StageIndicator({ currentStage, stages, done }) {
   return (
