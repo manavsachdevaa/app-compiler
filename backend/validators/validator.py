@@ -1,9 +1,7 @@
-import anthropic
 import json
 import re
 from typing import Any
 
-client = anthropic.Anthropic()
 
 REPAIR_SYSTEM_PROMPT = """You are a JSON repair engine. Fix the broken JSON below and return ONLY valid JSON.
 
@@ -33,26 +31,12 @@ class ValidationResult:
 
 
 def repair_json(raw: str) -> dict:
-    """Try to parse JSON, use Claude to repair if it fails."""
-    # Strip markdown fences
+    """Try to parse JSON."""
     raw = re.sub(r"^```json\s*", "", raw.strip())
     raw = re.sub(r"\s*```$", "", raw)
     raw = raw.strip()
 
-    try:
-        return json.loads(raw)
-    except json.JSONDecodeError:
-        # Use Claude to repair
-        response = client.messages.create(
-            model="claude-sonnet-4-20250514",
-            max_tokens=4000,
-            system=REPAIR_SYSTEM_PROMPT,
-            messages=[{"role": "user", "content": f"Repair this JSON:\n\n{raw}"}]
-        )
-        repaired = response.content[0].text.strip()
-        repaired = re.sub(r"^```json\s*", "", repaired)
-        repaired = re.sub(r"\s*```$", "", repaired)
-        return json.loads(repaired.strip())
+    return json.loads(raw)
 
 
 def validate_db_schema(db: dict, result: ValidationResult) -> dict:
